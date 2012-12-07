@@ -1,0 +1,38 @@
+{
+    "name": "protolus-resource",
+    "homepage": "https://github.com/Protolus/protolus-templates",
+    "version": "0.0.1-alpha",
+    "main": "protolus-templates.js",
+    "description": "A Smarty-like, pluggable, view controlled template framework+language to enable MVVM applications",
+    "keywords": [
+        "url",
+        "router",
+        "protolus",
+        "ini",
+        "conf"
+    ],
+    "author": "Abbey Hawk Sparrow <@khrome> (http://patternweaver.com)",
+    "contributors": [],
+    "bugs": {
+        "url": "https://github.com/Protolus/protolus-templates/issues"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/Protolus/protolus-templates.git"
+    },
+    "dependencies": {
+        "prime": "*",
+        "url":"*",
+        "Classy":"*"
+    },
+    "devDependencies": {
+        "mocha": "*",
+        "should": "*",
+        "request":"*"
+    },
+    "optionalDependencies": {},
+    "engines": {
+        "node": "*"
+    }
+}
