@@ -1,37 +1,53 @@
 var should = require("should");
-var request = require('request');
-var http = require('http');
-var port = 221;
-var resource = require('./protolus-resource');
+
 describe('ProtolusResource', function(){
-    describe('Simple \'test-component\' tests', function(){
-        var server;
-        var running = false;
-        before(function(done){
-            try{
-                server = http.createServer(function(req, res) {
-                    resource.handleResourceCalls(req, res, function(){
-                        //serve a page
-                    });
-                }).listen(port);
-                server.on("listening", function() {
-                    running = true;
+    describe('Panel tests', function(){
+        var Templates = require('./protolus-templates');
+        before(function(){
+            Templates({ templateDirectory : '/Panels' });
+        });
+        
+        it('Basic render', function(done){
+            new Templates.Panel('simple', function(panel){
+                panel.render({} , function(html){
+                    html.indexOf('OMG').should.not.equal(-1);
                     done();
                 });
-            }catch(ex){
-                should.not.exist(ex);
-            }
+            });
         });
         
-        it('Server Runs', function(){
-            should.equal(running, true);
+        it('Basic if', function(done){
+            /*new Templates.Panel('foreach', function(panel){
+                var data = {
+                    test : 'blah'
+                };
+                panel.render(data , function(html){
+                    html.indexOf('YES').should.not.equal(-1);
+                    done();
+                });
+            });*/
         });
         
-        it('Should perform simple, macroless render');
-        
-        after(function(done) {
-            server.close();
-            done();
+        it('Basic foreach', function(done){
+            new Templates.Panel('foreach', function(panel){
+                var data = {
+                    test : 'blah',
+                    list : [
+                        'foo',
+                        'bar',
+                        'baz'
+                    ]
+                };
+                panel.render(data , function(html){
+                    html.indexOf('<h2>'+data.test+'</h2>').should.not.equal(-1);
+                    data.list.forEach(function(value, key){
+                        html.indexOf('<a>'+key+'</a>').should.not.equal(-1);
+                        html.indexOf('<b>'+value+'</b>').should.not.equal(-1);
+                    });
+                    done();
+                });
+            });
         });
+        
     });
 });

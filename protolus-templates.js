@@ -40,8 +40,11 @@ array.combine = function(thisArray, thatArray){ //parallel
     });
     return result;
 };
+array.contains = function(haystack, needle){ //parallel
+    return haystack.indexOf(needle) != -1;
+};
 prime.keys = function(object){
-    result = [];
+    var result = [];
     for(var key in object) result.push(key);
     return result;
 }
@@ -217,12 +220,12 @@ Templates.TagParser = new Class({ //my ultra-slim tag parser
                         //console.log('close opening tag');
                         this.open(tag);
                         tagStack.push(tag);
-                        literalMode = this.literalTags.contains(tag.name);
+                        literalMode = array.contains(this.literalTags, tag.name);
                         if(literalMode) literal = tag.name;
                         if(
                             currentTag[currentTag.length-1] == this.closeEscape || 
-                            this.unaryTags.contains(tag.name) ||
-                            (this.unrecognized == 'unary' && !recognizedTags.contains(tag.name))
+                            array.contains(this.unaryTags, tag.name) ||
+                            (this.unrecognized == 'unary' && !array.contains(recognizedTags, tag.name))
                         ){
                             this.close(tag);
                             var lastTag = tagStack.pop();
@@ -277,7 +280,7 @@ Templates.TagParser = new Class({ //my ultra-slim tag parser
                         continue;
                     }
                 }else{
-                    if(this.attributeDelimiters.contains(ch)){
+                    if(array.contains(this.attributeDelimiters, ch)){
                         inQuote = ch;
                         continue;
                     }
@@ -294,7 +297,7 @@ Templates.TagParser = new Class({ //my ultra-slim tag parser
                         currentValue = '';
                     }else currentValue += ch;
                 }
-                this.attributeDelimiters.contains(ch)
+                array.contains(this.attributeDelimiters, ch)
             }else{
                 if(ch == ' '){
                     tagName = currentValue;
@@ -431,15 +434,15 @@ Templates.Template.Smarty = new Class({
                     if(!key) key = 'key';
                     if(from.substring(0,1) == '$') from = from.substring(1);
                     from = this.getVariable(from);
-                    var func = function(value, index){
+                    var func = fn.bind(function(value, index){
                         this.set(key, index);
                         this.set(item, value);
-                        node.children.each(function(child){
+                        array.forEach(node.children, fn.bind(function(child){
                             res += this.renderNode(child);
-                        }.bind(this));
-                    }.bind(this);
-                    if(typeOf(from) == 'object') Object.each(from, func);
-                    else from.each(func);
+                        }, this));
+                    }, this);
+                    if(type(from) == 'object') prime.each(from, func);
+                    else array.forEach(from, func);
                     return res;
                     break;
                 case 'page':
@@ -743,7 +746,7 @@ Templates.Panel = new Class({
         }
     },
     fetch : function(file, callback, error){
-        Templates.load('./'+file, function(err, data){
+        Templates.load('.'+file, function(err, data){
             if(err){
                 if(error) error(err);
                 else throw(err);
