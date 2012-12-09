@@ -5,11 +5,9 @@
     "main": "protolus-templates.js",
     "description": "A Smarty-like, pluggable, view controlled template framework+language to enable MVVM applications",
     "keywords": [
-        "url",
-        "router",
-        "protolus",
-        "ini",
-        "conf"
+        "templates",
+        "smarty",
+        "MVVM"
     ],
     "author": "Abbey Hawk Sparrow <@khrome> (http://patternweaver.com)",
     "contributors": [],
