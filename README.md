@@ -99,6 +99,7 @@ First, intialize the Templates subsystem;
     Templates([<options>]);
     
 There are a variety of available options:
+
 1. scriptDirectory : The directory from which to load the controllers, defaults to 'App/Panels'
 2. templateDirectory : The directory from which to load the panels, defaults to 'App/Controllers'
 3. doTestExistence : The function to use to load a panel, defaults to a file loader
