@@ -84,14 +84,41 @@ Resources may be targeted to outputs (by default all output will be to 'HEAD' wh
     <html>
         <head>
             <title>WTFBBQ!</title>
-            <!--[[HEAD]]-->
+            <!--[HEAD]-->
         </head>
         <body>
             {$content}
         </body>
     </html>
-
     
+Usage
+-----
+
+First, intialize the Templates subsystem;
+
+    Templates([<options>]);
+    
+There are a variety of available options:
+1. scriptDirectory : The directory from which to load the controllers, defaults to 'App/Panels'
+2. templateDirectory : The directory from which to load the panels, defaults to 'App/Controllers'
+3. doTestExistence : The function to use to load a panel, defaults to a file loader
+4. doLoad : The function  used to test for a panel's existence, defaults to testing file existence
+    
+Now, you're ready to render:
+
+    Templates.renderPanel('page', function(html){
+        console.log('html', html);
+    });
+
+And if you need to inject 'something' in a target 'FOO' you've put in the page, which has been rendered into myVar
+
+    myVar = Templates.insertTextAtTarget('something', 'FOO', myVar);
+    
+inserts wherever it finds the signature on the page
+
+    <!--[FOO]-->
+    
+Hope that helps, please report any rough edges!
 
 Enjoy,
 

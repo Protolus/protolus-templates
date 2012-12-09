@@ -108,18 +108,17 @@ var Templates = function(options){
     if(!Templates.load){
         if(!options) options = {};
         Templates.templateCache = {};
-        Templates.load = options.onTestExistence;
         if(options.scriptDirectory) Templates.scriptDirectory = options.scriptDirectory;
         else Templates.scriptDirectory = '/App/Controllers';
         if(options.templateDirectory) Templates.templateDirectory = options.templateDirectory;
         else Templates.templateDirectory = '/App/Panels';
-        if(options.onTestExistence) Templates.load = options.onTestExistence;
+        if(options.doLoad) Templates.load = options.doLoad;
         else Templates.load = function(file, callback){
             var fs = require('fs');
             if(callback) fs.readFile(file, 'utf8', callback);
             else return fs.readFileAsync(file);
         };
-        if(options.onTestExistence) Templates.load = options.onTestExistence;
+        if(options.doTestExistence) Templates.load = options.doTestExistence;
         else Templates.exists = function(file, callback){
             var fs = require('fs');
             if(callback) fs.exists(file, callback);
