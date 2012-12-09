@@ -1,5 +1,5 @@
 {
-    "name": "protolus-resource",
+    "name": "protolus-templates",
     "homepage": "https://github.com/Protolus/protolus-templates",
     "version": "0.0.1-alpha",
     "main": "protolus-templates.js",
