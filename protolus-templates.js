@@ -530,7 +530,7 @@ Templates.Template.Smarty = new Class({
                 case 'panel':
                     var res = '';
                     if(!node.attributes.name) throw('panel macro requires \'name\' attribute');
-                    var subpanel = new Protolus.Panel(node.attributes.name, {onLoad:function(subpanel){
+                    var subpanel = new Templates.Panel(node.attributes.name, {onLoad:function(subpanel){
                         subpanel.template.progenitor = this;
                     }.bind(this)});
                     var id = this.async(); //this indirection makes me uncomfortable
@@ -758,7 +758,7 @@ Templates.Panel = new Class({
             Templates.load('.'+fileName, function(err, data){
                 if(err){
                     if(error) error(err);
-                    console.log(err);
+                    callback({});
                 }else{
                     var renderer = new Templates.TemplateData();
                     eval(data);
