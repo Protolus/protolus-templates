@@ -64,6 +64,8 @@ This is where we set the main data for the page macro, and should be set on the 
         {foreach from="$thing" item="item" key="key"}
             <li>{$key}:{$item}</li>
         {/foreach}
+5. **literal**
+    An encapsulation to prevent '{}' from attempting to parse as macros, useful for wrapping inline js or css.
 
 'Controllers'
 -------------

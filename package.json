@@ -23,13 +23,11 @@
     },
     "dependencies": {
         "prime": "*",
-        "url":"*",
         "Classy":"*"
     },
     "devDependencies": {
         "mocha": "*",
-        "should": "*",
-        "request":"*"
+        "should": "*"
     },
     "optionalDependencies": {},
     "engines": {
