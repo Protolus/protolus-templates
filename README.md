@@ -13,6 +13,8 @@ View Based Control
 
 The key feature is render flow is controlled by the view rather than the 'controller' logic (which only serves to populate data for a given interface). So you can stub out an entire interface without touching any controllers, and the pure JS rendering means that this can happen on the client or the browser.
 
+![Screenshot](http://wiki.protol.us/images/9/9e/ProtolusRenderTree.png )
+
 Macros
 ------
 
