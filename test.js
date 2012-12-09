@@ -4,7 +4,10 @@ describe('ProtolusResource', function(){
     describe('Panel tests', function(){
         var Templates = require('./protolus-templates');
         before(function(){
-            Templates({ templateDirectory : '/Panels' });
+            Templates({
+                templateDirectory : '/Panels',
+                scriptDirectory : '/Scripts'
+            });
         });
         
         it('Basic render', function(done){
@@ -17,7 +20,7 @@ describe('ProtolusResource', function(){
         });
         
         it('Basic if', function(done){
-            /*new Templates.Panel('foreach', function(panel){
+            new Templates.Panel('if', function(panel){
                 var data = {
                     test : 'blah'
                 };
@@ -25,7 +28,7 @@ describe('ProtolusResource', function(){
                     html.indexOf('YES').should.not.equal(-1);
                     done();
                 });
-            });*/
+            });
         });
         
         it('Basic foreach', function(done){
@@ -46,6 +49,16 @@ describe('ProtolusResource', function(){
                     });
                     done();
                 });
+            });
+        });
+        
+        it('Basic page', function(done){
+            Templates.renderPage('page', function(html){
+                html = Templates.insertTextAtTarget('inserted', 'head', html);
+                html.indexOf('<h2>excellent</h2>').should.not.equal(-1);
+                html.indexOf('<div>blah</div>').should.not.equal(-1);
+                html.indexOf('inserted').should.not.equal(-1);
+                done();
             });
         });
         

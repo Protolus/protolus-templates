@@ -2,6 +2,7 @@
 var prime = require('prime');
 var Class = require('Classy');
 var type = require('prime/util/type');
+var string = require('prime/es5/string');
 var array = require('prime/es5/array');
 array.forEachEmission = function(collection, callback, complete){ //one at a time
     var a = {count : 0};
@@ -47,7 +48,29 @@ prime.keys = function(object){
     var result = [];
     for(var key in object) result.push(key);
     return result;
-}
+};
+prime.clone = function(obj){
+    var result;
+    switch(type(obj)){
+        case 'object':
+            result = {};
+            for(var key in obj){
+                result[key] = prime.clone(obj[key]);
+            }
+            break;
+        case 'array':
+            result = obj.slice(0);
+            break;
+        default : result = obj;
+    }
+    return result;
+};
+string.startsWith = function(str, sub){
+    return str.indexOf(sub) === 0; //likely more expensive than needed
+};
+string.endsWith = function(str, sub){
+    return str.substring(str.length-sub.length) === sub;
+};
 var fn = require('prime/es5/function');
 var regexp = require('prime/es5/regexp');
 var Emitter = require('prime/util/emitter');
@@ -139,6 +162,9 @@ Templates.TemplateData = new Class({
             current = current[parts.pop()];
         }
         return current;
+    },
+    getData : function(){
+        return this.data;
     }
     
 });//*/
@@ -519,25 +545,25 @@ Templates.Template.Smarty = new Class({
                     node.clause = node.full.substring(2).trim();
                     var conditionResult = this.evaluateSmartyPHPHybridBooleanExpression(node.clause);
                     var blocks = {'if':[]};
-                    node.children.each(function(child){
+                    array.forEach(node.children, fn.bind(function(child){
                         if(blocks['else'] !== undefined){
                             blocks['else'].push(child);
                         }else{
-                            if(typeOf(child) == 'object' && child.name == 'else'){
+                            if(type(child) == 'object' && child.name == 'else'){
                                 blocks['else'] = [];
                                 return;
                             }
                             blocks['if'].push(child);
                         }
-                    }.bind(this));
+                    }, this));
                     if(conditionResult){
-                        blocks['if'].each(function(child){
+                        array.forEach(blocks['if'], function(child){
                             res += this.renderNode(child);
                         }.bind(this));
                     }else if(blocks['else']){
-                        blocks['else'].each(function(child){
+                        array.forEach(blocks['else'], fn.bind(function(child){
                             res += this.renderNode(child);
-                        }.bind(this));
+                        }, this));
                     }
                     return res;
                     break;
@@ -556,6 +582,8 @@ Templates.Template.Smarty = new Class({
     },
     evaluateSmartyPHPHybridBooleanExpression : function(expression){
         //var pattern = /[Ii][Ff] +(\$[A-Za-z][A-Za-z0-9.]*) *$/s;
+        var pattern;
+        var parts;
         expression = expression.trim();
         if(expression.toLowerCase().substring(0, 2) == 'if'){
             //todo: multilevel
@@ -642,14 +670,14 @@ Templates.Template.Smarty = new Class({
     evaluateSmartyPHPHybridVariable : function(accessor, isConf){
         if(isConf == 'undefined' || isConf == null) isConf = false;
         if(!accessor) return '';
-        if(accessor.toLowerCase().startsWith('\'') && accessor.toLowerCase().endsWith('\'')) return accessor.substr(1, accessor.length-2);
-        if(accessor.toLowerCase().startsWith('"') && accessor.toLowerCase().endsWith('"')) return accessor.substr(1, accessor.length-2);
-        if(accessor.toLowerCase().startsWith('$smarty.')) return this.get(accessor.substr(8));
-        if(accessor.startsWith('$')){
+        if(string.startsWith(accessor.toLowerCase(), '\'') && string.endsWith(accessor.toLowerCase(), '\'')) return accessor.substr(1, accessor.length-2);
+        if(string.startsWith(accessor.toLowerCase(), '"') && string.endsWith(accessor.toLowerCase(), '"')) return accessor.substr(1, accessor.length-2);
+        if(string.startsWith(accessor.toLowerCase(), '$smarty.')) return this.get(accessor.substr(8));
+        if(string.startsWith(accessor, '$')){
             var acc = accessor.substring(1);
             return this.get(acc);
         }
-        if(accessor.startsWith('#') && accessor.endsWith('#')){
+        if(string.startsWith(accessor, '#') && string.endsWith(accessor, '#')){
             var cnf = accessor.substr(1, accessor.length-2);
             return Midas.SmartyLib.evaluateSmartyPHPHybridVariable( cnf , true);
         }
@@ -722,14 +750,6 @@ Templates.Panel = new Class({
     },
     fetchData : function(callback, error){
         var fileName = this.options.scriptDirectory+'/'+this.name+'.controller.js';
-        /*if(Protolus.isNode && !callback){ //synchronous call
-            var name = fileName;
-            var file = System.file.readFileSync(name);
-            var renderer = this.template;
-            if(!file) return {};
-            eval(file.toString());
-            return renderer.data;
-        }*/
         if(!callback) throw('OMG Sync!');
         //todo: cache non-existence
         if(this.dataCache[this.name]){
@@ -739,8 +759,12 @@ Templates.Panel = new Class({
             Templates.load('.'+fileName, function(err, data){
                 if(err){
                     if(error) error(err);
+                    console.log(err);
                 }else{
-                    callback(data);
+                    var renderer = new Templates.TemplateData();
+                    eval(data);
+                    //console.log('DD', renderer.data);
+                    callback(renderer.data);
                 }
             });
         }
@@ -971,5 +995,43 @@ Templates.Panel.date = function(timestamp, format){
     var val = this.date(timestamp, format);
     //console.log(val);
     return val; //*/
+};
+
+Templates.renderPage = function(panelName, options){
+    var anchor = {};
+    if( type(options) == 'function' ) options = {
+        'onSuccess':options
+    };
+    if(!options) options = {};
+    if(!options.resources) options.resources = [];
+    var panel = new Templates.Panel(panelName, {
+        wrapperSet : function(newWrapper){
+            anchor.wrapper = newWrapper;
+        },
+        onLoad :function(panel){ //make sure panel.template is loaded
+            //panel.template.ensureResources(options.resources, function(){ //preload passed resources
+                panel.render(function(content){
+                    if(!anchor.wrapper){
+                        options.onSuccess(content);
+                        return;
+                    }
+                    var wrapper = new Templates.Panel(anchor.wrapper, {
+                        templateMode : 'wrapper'
+                    });
+                    var data = prime.clone(panel.template.data);
+                    data.content = content;
+                    
+                    wrapper.render(data, function(wrappedContent){
+                        options.onSuccess(wrappedContent);
+                    });
+                });
+            //}, 'App/Resources');
+        }
+    });
+};
+
+Templates.insertTextAtTarget = function(text, target, html){
+    var signature = '<!--['+target.toUpperCase()+']-->';
+    return html.replace( signature, function(){ return text+signature } );
 };
 module.exports = Templates;

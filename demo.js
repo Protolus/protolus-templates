@@ -1,9 +1,9 @@
 var Templates = require('./protolus-templates');
 
-var app = require('http').createServer(function handler(req, res) {
+/*var app = require('http').createServer(function handler(req, res) {
     Templates({
         templateDirectory : 'Panels'
-    })
+    });
     new Templates.Panel('test', function(panel){
         console.log('READY');
         panel.render({}, function(html){
@@ -11,9 +11,17 @@ var app = require('http').createServer(function handler(req, res) {
         });
     });
 });
-app.listen(80);
+app.listen(80);*/
 
-var request = require('request');
+Templates({
+    templateDirectory : '/Panels',
+    scriptDirectory : '/Scripts'
+});
+Templates.renderPanel('page', function(html){
+    console.log('html', html);
+});
+
+//var request = require('request');
 
 /*request('http://localhost/js/test-component', function (error, response, body) {
     var check = require('syntax-error');
