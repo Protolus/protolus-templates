@@ -49,6 +49,11 @@ prime.keys = function(object){
     for(var key in object) result.push(key);
     return result;
 };
+prime.values = function(object){
+    var result = [];
+    for(var key in object) result.push(object[key]);
+    return result;
+};
 prime.clone = function(obj){
     var result;
     switch(type(obj)){
@@ -63,6 +68,16 @@ prime.clone = function(obj){
             break;
         default : result = obj;
     }
+    return result;
+};
+prime.merge = function(objOne, objTwo){
+    var result = {};
+    prime.forEach(objOne, function(item, key){
+        result[key] = item;
+    });
+    prime.forEach(objTwo, function(item, key){
+        if(!result[key]) result[key] = item;
+    });
     return result;
 };
 string.startsWith = function(str, sub){
@@ -112,6 +127,10 @@ var Templates = function(options){
         else Templates.scriptDirectory = '/App/Controllers';
         if(options.templateDirectory) Templates.templateDirectory = options.templateDirectory;
         else Templates.templateDirectory = '/App/Panels';
+        if(options.scriptFileType) Templates.scriptFileType = options.scriptFileType;
+        else Templates.scriptFileType = 'controller.js';
+        if(options.templateFileType) Templates.templateFileType = options.templateFileType;
+        else Templates.templateFileType = 'panel.tpl';
         if(options.doLoad) Templates.load = options.doLoad;
         else Templates.load = function(file, callback){
             var fs = require('fs');
@@ -476,7 +495,7 @@ Templates.Template.Smarty = new Class({
                     };
                     var rootPanel = this.getRoot();
                     if(node.attributes.title){
-                        rootPanel.environment['page_title'] = node.attributes.title;
+                        //rootPanel.environment['page_title'] = node.attributes.title;
                     };
                     return '';
                     break;
@@ -487,7 +506,7 @@ Templates.Template.Smarty = new Class({
                         throw('require macro requires \'name\' attribute');
                     }
                     if(!node.attributes.mode) node.attributes.mode = 'targeted';
-                    if(!node.attributes.directory) node.attributes.directory = Protolus.resourceDirectory;
+                    if(!node.attributes.directory) node.attributes.directory = 'node_modules';
                     if(node.attributes.directory == "local") node.attributes.directory = "App/Resources";
                     if(!node.attributes.target) node.attributes.target = 'HEAD';
                     else node.attributes.target = node.attributes.target.toUpperCase();
@@ -571,7 +590,7 @@ Templates.Template.Smarty = new Class({
                     break;
                 default :
                     if(node.name.substring(0,1) == '$'){
-                        return this.get(node.name.substring(1));
+                        return this.get(node.name.substring(1)) || '';
                     }
             }
         }
@@ -813,19 +832,17 @@ Templates.Panel.count = function(panel){
     if(!Protolus.Panel.renderCounts[panel]) Protolus.Panel.renderCounts[panel] = 0;
     return Protolus.Panel.renderCounts[panel]++;
 };
-Templates.Panel.exists = function(panel, callback){
-    var routedPanel = panel;
-    routedPanel = Protolus.consumeGetParameters(routedPanel);
-    var path = (Protolus.templateLocation+routedPanel+'.'+Protolus.panelExtension);
-    if(Protolus.isNode){
-        System.file.exists('.'+path, function(exists){
-            if(callback) callback(exists);
-        });
+Templates.Panel.exists = function(panel, callback){ 
+    //strip args
+    panel = (panel.indexOf('?') != -1)?panel.substring(0, panel.indexOf('?')-1):panel;
+    var dir = Templates.templateDirectory;
+    if(dir.indexOf("/") === 0) dir = dir.substring(1);
+    var file = './'+dir+'/'+panel+'.'+Templates.templateFileType;
+    if(callback){
+        return fs.exists(file, callback);
     }else{
-        var result = path.existsAsURL();
-        if(callback) callback(result);
-    }
-    //return result;
+        return fs.existsSync(file);
+    };
 };
 Templates.Panel.dataCache = {};
 //perhaps something that should be static
@@ -1008,23 +1025,21 @@ Templates.renderPage = function(panelName, options){
             anchor.wrapper = newWrapper;
         },
         onLoad :function(panel){ //make sure panel.template is loaded
-            //panel.template.ensureResources(options.resources, function(){ //preload passed resources
-                panel.render(function(content){
-                    if(!anchor.wrapper){
-                        options.onSuccess(content);
-                        return;
-                    }
-                    var wrapper = new Templates.Panel(anchor.wrapper, {
-                        templateMode : 'wrapper'
-                    });
-                    var data = prime.clone(panel.template.data);
-                    data.content = content;
-                    
-                    wrapper.render(data, function(wrappedContent){
-                        options.onSuccess(wrappedContent);
-                    });
+            panel.render(function(content){
+                if(!anchor.wrapper){
+                    options.onSuccess(content);
+                    return;
+                }
+                var wrapper = new Templates.Panel(anchor.wrapper, {
+                    templateMode : 'wrapper'
                 });
-            //}, 'App/Resources');
+                var data = prime.clone(panel.template.data);
+                data.content = content;
+                
+                wrapper.render(data, function(wrappedContent){
+                    options.onSuccess(wrappedContent);
+                });
+            });
         }
     });
 };

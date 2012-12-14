@@ -1,13 +1,14 @@
 {
     "name": "protolus-templates",
     "homepage": "https://github.com/Protolus/protolus-templates",
-    "version": "0.0.1-alpha",
+    "version": "0.0.2-alpha",
     "main": "protolus-templates.js",
     "description": "A Smarty-like, pluggable, view controlled template framework+language to enable MVVM applications",
     "keywords": [
         "templates",
         "smarty",
-        "MVVM"
+        "MVVM",
+        "protolus"
     ],
     "author": "Abbey Hawk Sparrow <@khrome> (http://patternweaver.com)",
     "contributors": [],
