@@ -1,4 +1,5 @@
 var Templates = require('./protolus-templates');
+var Smarty = require('tag-template/smarty');
 
 /*var app = require('http').createServer(function handler(req, res) {
     Templates({
@@ -12,14 +13,20 @@ var Templates = require('./protolus-templates');
     });
 });
 app.listen(80);*/
-
-Templates({
-    templateDirectory : '/Panels',
-    scriptDirectory : '/Scripts'
+//*
+Templates.set({
+    base : process.cwd()+'/',
+    templateDirectory : 'Panels',
+    controllerDirectory : 'Scripts'
 });
-Templates.renderPanel('page', function(html){
+Templates.renderPage('page', function(html){
     console.log('html', html);
-});
+});//*/
+/*
+var stuff = '{thing wrapper="testWrapper"}\
+<h2>{$test}</h2>';
+var template = new Smarty(stuff);
+console.log(template.parser);//*/
 
 //var request = require('request');
 

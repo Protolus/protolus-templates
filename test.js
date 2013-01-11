@@ -4,9 +4,10 @@ describe('Protolus.Templates', function(){
     describe('can render', function(){
         var Templates = require('./protolus-templates');
         before(function(){
-            Templates({
-                templateDirectory : '/Panels',
-                scriptDirectory : '/Scripts'
+            Templates.set({
+                base : process.cwd()+'/',
+                templateDirectory : 'Panels',
+                controllerDirectory : 'Scripts'
             });
         });
         
