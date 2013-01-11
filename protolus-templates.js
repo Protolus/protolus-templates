@@ -44,6 +44,7 @@ Templates.options.controllerDirectory = 'App/Controllers';
 Templates.options.templateDirectory = 'App/Panels';
 Templates.options.controllerType = 'controller.js';
 Templates.options.templateType = 'panel.tpl';
+Templates.options.wrapperType = 'wrapper.tpl';
 Templates.options.caching = false;
 Templates.options.caches = {
     templates : {},
@@ -71,11 +72,12 @@ Templates.load = function(file, callback){
 Templates.exists = function(file, callback){
     var fs = require('fs');
     if(callback) fs.exists(file, callback);
-    else return fs.existsAsync(file);
+    else return fs.existsSync(file);
 };
 Templates.Wrapper = function(name, options){
+    if(type(options) == 'function') options = {onLoad:options};
     if(!options) options = {};
-    options.templateType = 'wrapper.tpl';
+    options.templateType = Templates.options.wrapperType;
     return new Templates.Panel(name, options);
 };
 Templates.Panel = new Class({
@@ -165,12 +167,16 @@ Templates.Panel.count = function(panel){
     if(!Templates.Panel.renderCounts[panel]) Templates.Panel.renderCounts[panel] = 0;
     return Templates.Panel.renderCounts[panel]++;
 };
-Templates.Panel.exists = function(panel, callback){ 
+Templates.Panel.exists = function(panel, filetype, callback){
+    if(!callback && type(filetype) == 'function'){
+        callback = filetype;
+        delete filetype;
+    }
     //strip args
     panel = (panel.indexOf('?') != -1)?panel.substring(0, panel.indexOf('?')-1):panel;
-    var dir = Templates.templateDirectory;
+    var dir = Templates.options.templateDirectory;
     if(dir.indexOf("/") === 0) dir = dir.substring(1);
-    var file = './'+dir+'/'+panel+'.'+Templates.templateFileType;
+    var file = './'+dir+'/'+panel+'.'+(filetype?filetype:Templates.options.templateType);
     return Templates.exists(file, callback);
 };
 Templates.Panel.date = function(timestamp, format){
@@ -195,11 +201,12 @@ Templates.renderPage = function(panelName, options){
                     options.onSuccess(content);
                     return;
                 }
-                var wrapper = new Templates.Wrapper(anchor.wrapper);
-                var data = prime.clone(panel.data);
-                data.content = content;
-                wrapper.render(data, function(wrappedContent){
-                    options.onSuccess(wrappedContent);
+                var wrapper = new Templates.Wrapper(anchor.wrapper, function(){
+                    var data = prime.clone(panel.data);
+                    data.content = content;
+                    wrapper.render(data, function(wrappedContent){
+                        options.onSuccess(wrappedContent);
+                    }); 
                 });
             });
         }
