@@ -13,7 +13,6 @@ var Options = require('prime-ext/options');
 var Registry = require('prime-ext/registry');
 
 var Smarty = require('tag-template/smarty');
-//*
 Smarty.registerMacro('page', function(node, template){
     if(node.attributes.wrapper && template.wrapperSet){
         template.wrapperSet(node.attributes.wrapper);
@@ -104,7 +103,7 @@ Templates.Panel = new Class({
         fetchData : function(callback, error){
             var dir = this.options.controllerDirectory || Templates.options.controllerDirectory;
             var type = this.options.controllerType || Templates.options.controllerType;
-            var fileName = Templates.options.base+dir+'/'+this.name+'.'+type;
+            var fileName = Templates.options.base+'/'+dir+'/'+this.name+'.'+type;
             if(!callback) throw('OMG Sync!');
             if(Templates.caching && Templates.caches.data[this.name]){
                 //todo: handle out-of-date data
@@ -117,9 +116,24 @@ Templates.Panel = new Class({
                     }else{
                         //todo: caching
                         var renderer = new TemplateData();
-                        eval(data);
+                        var require = Templates.internalRequire || require;
+                        var count = 0;
+                        var check = function(){
+                            if(count == 0) callback(renderer.data);
+                        };
+                        renderer.async = function(callback){
+                            count++;
+                            var rtrn = function(){
+                                count--;
+                                check();
+                            };
+                            callback(rtrn);
+                        }
+                        try{
+                            eval(data);
+                        }catch(ex){}
                         this.data = renderer.data;
-                        callback(renderer.data);
+                        check();
                     }
                 }, this));
             }

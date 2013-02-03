@@ -121,7 +121,15 @@ inserts wherever it finds the signature on the page
 
     <!--[FOO]-->
     
-Hope that helps, please report any rough edges!
+Testing
+-------
+Tests use mocha/should to execute the tests from root
+
+    mocha
+
+If you find any rough edges, please submit a bug!
+
+Right now this only supports credit cards, but this could easily expand to gift cards, EBT, checks, etc. If you have a specific interest, contact me.
 
 Enjoy,
 
