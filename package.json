@@ -1,7 +1,7 @@
 {
     "name": "protolus-templates",
     "homepage": "https://github.com/Protolus/protolus-templates",
-    "version": "0.0.6-alpha",
+    "version": "0.0.7-alpha",
     "main": "protolus-templates.js",
     "description": "A Smarty-like, pluggable, view controlled template framework+language to enable MVC/MVVM applications",
     "keywords": [

@@ -100,7 +100,7 @@ Templates.Panel = new Class({
                 }
             }, this));
         },
-        fetchData : function(callback, error){
+        fetchData : function(callback, error, env){
             var dir = this.options.controllerDirectory || Templates.options.controllerDirectory;
             var type = this.options.controllerType || Templates.options.controllerType;
             var fileName = Templates.options.base+'/'+dir+'/'+this.name+'.'+type;
@@ -121,6 +121,11 @@ Templates.Panel = new Class({
                         var check = function(){
                             if(count == 0) callback(renderer.data);
                         };
+                        var keys = prime.keys(env);
+                        var length = keys.length;
+                        if(data) for(var lcv=0; lcv < length; lcv++){
+                            eval('var '+keys[lcv]+' = env[\''+keys[lcv]+'\'];');
+                        }
                         renderer.async = function(callback){
                             count++;
                             var rtrn = function(){
@@ -131,7 +136,10 @@ Templates.Panel = new Class({
                         }
                         try{
                             eval(data);
-                        }catch(ex){}
+                        }catch(ex){
+                            console.log('ERROR', fileName, ex);
+                            count = 0;
+                        }
                         this.data = renderer.data;
                         check();
                     }
@@ -162,7 +170,7 @@ Templates.Panel = new Class({
             this.options.fetchData.apply(this, [function(fetchedData){
                 this.data = data;
                 this.render(fetchedData, data); 
-            }.bind(this)]);
+            }.bind(this), function(){}, Templates.env]);
             return;
         }
         if(this.template){
@@ -231,4 +239,5 @@ Templates.insertTextAtTarget = function(text, target, html){
     var signature = '<!--['+target.toUpperCase()+']-->';
     return html.replace( signature, function(){ return text+signature } );
 };
+Templates.env = {};
 module.exports = Templates;
