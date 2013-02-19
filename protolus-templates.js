@@ -30,6 +30,7 @@ Smarty.registerMacro('panel', function(node, template){
         subpanel.template.progenitor = template;
     }.bind(template)});
     var id = template.async(); //template indirection makes me uncomfortable
+    if(template.panel && template.panel.env) subpanel.env = template.panel.env;
     subpanel.render(function(panel){
         template.return(id, panel);
     }.bind(template));
@@ -37,7 +38,7 @@ Smarty.registerMacro('panel', function(node, template){
 });//*/
 
 var TemplateData = require('tag-template/data');
-Templates = {options:{}};
+var Templates = {options:{}};
 Templates.options.base = '';
 Templates.options.controllerDirectory = 'App/Controllers';
 Templates.options.templateDirectory = 'App/Panels';
@@ -82,6 +83,7 @@ Templates.Wrapper = function(name, options){
 Templates.Panel = new Class({
     Implements : [Emitter, Options],
     data : {},
+    env : false,
     options : {
         fetchTemplate : function(callback){
             var dir = this.options.templateDirectory || Templates.options.templateDirectory;
@@ -92,6 +94,7 @@ Templates.Panel = new Class({
                 else{
                     this.template = new Smarty(data);
                     this.template.wrapperSet = this.options.wrapperSet;
+                    this.template.panel = this;
                     //todo: handle delayed renders
                     array.forEach(this.delayed, fn.bind(function(item){
                         this.render(item.data, item.callback);
@@ -166,11 +169,12 @@ Templates.Panel = new Class({
         this.template.environment.data = data;
     },
     render : function(data, callback){
-        if(type(data) == 'function' && !callback){
+        if(type(data) == 'function'){
+            callback = data;
             this.options.fetchData.apply(this, [function(fetchedData){
-                this.data = data;
-                this.render(fetchedData, data); 
-            }.bind(this), function(){}, Templates.env]);
+                this.data = fetchedData;
+                this.render(fetchedData, callback); 
+            }.bind(this), function(){}, this.env || Templates.env]);
             return;
         }
         if(this.template){
@@ -218,6 +222,7 @@ Templates.renderPage = function(panelName, options){
             anchor.wrapper = newWrapper;
         },
         onLoad :function(panel){ //make sure panel.template is loaded
+            if(options.env) panel.env = options.env;
             panel.render(function(content){
                 if(!anchor.wrapper){
                     options.onSuccess(content);
@@ -226,6 +231,7 @@ Templates.renderPage = function(panelName, options){
                 var wrapper = new Templates.Wrapper(anchor.wrapper, function(){
                     var data = prime.clone(panel.data);
                     data.content = content;
+                    if(options.env) wrapper.env = options.env;
                     wrapper.render(data, function(wrappedContent){
                         options.onSuccess(wrappedContent);
                     }); 
