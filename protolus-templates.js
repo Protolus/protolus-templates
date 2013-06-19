@@ -121,6 +121,7 @@ Templates.Panel = new Class({
                         var renderer = new TemplateData();
                         var require = Templates.internalRequire || require;
                         var count = 0;
+                        var Protolus = GLOBAL.Protolus || {};
                         var check = function(){
                             if(count == 0) callback(renderer.data);
                         };
@@ -169,12 +170,13 @@ Templates.Panel = new Class({
         this.template.environment.data = data;
     },
     render : function(data, callback){
+        var env = this.env || Templates.env;
         if(type(data) == 'function'){
             callback = data;
             this.options.fetchData.apply(this, [function(fetchedData){
                 this.data = fetchedData;
                 this.render(fetchedData, callback); 
-            }.bind(this), function(){}, this.env || Templates.env]);
+            }.bind(this), function(){}, env]);
             return;
         }
         if(this.template){
